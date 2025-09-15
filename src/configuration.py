@@ -1,26 +1,34 @@
-import logging
-
-from keboola.component.exceptions import UserException
-from pydantic import BaseModel, Field, ValidationError, field_validator
+import os
+from pydantic import BaseModel, Field, field_validator
 
 
 class Configuration(BaseModel):
-    print_hello: bool
-    api_token: str = Field(alias="#api_token")
-    debug: bool = False
+    kbc_token: str = Field(alias="#kbc_token")
+    kbc_url: str = Field(alias="kbc_url")
+    branch_id: str = Field(alias="branch_id")
 
-    def __init__(self, **data):
-        try:
-            super().__init__(**data)
-        except ValidationError as e:
-            error_messages = [f"{err['loc'][0]}: {err['msg']}" for err in e.errors()]
-            raise UserException(f"Validation Error: {', '.join(error_messages)}")
-
-        if self.debug:
-            logging.debug("Component will run in Debug mode")
-
-    @field_validator("api_token")
-    def token_must_be_uppercase(cls, v):
-        if not v.isupper():
-            raise UserException("API token must be uppercase")
+    @field_validator('kbc_token', mode='before')
+    @classmethod
+    def validate_kbc_token(cls, v):
+        # Prioritize environment variable over config value
+        env_token = os.environ.get('KBC_TOKEN')
+        if env_token is not None:
+            return env_token
         return v
+
+    @field_validator('kbc_url', mode='before')
+    @classmethod
+    def validate_kbc_url(cls, v):
+        # Prioritize environment variable over config value
+        env_url = os.environ.get('KBC_URL')
+        if env_url is not None:
+            return env_url
+        return v
+
+    @field_validator('branch_id', mode='before')
+    @classmethod
+    def validate_branch_id(cls, v):
+        # If parameter exists in config, use it; otherwise set default value
+        if v is not None:
+            return v
+        return "default"
