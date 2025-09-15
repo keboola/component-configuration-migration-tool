@@ -1,0 +1,1 @@
+https://github.com/keboola/component-configuration-migration-tool/blob/master/LICENSE.md
