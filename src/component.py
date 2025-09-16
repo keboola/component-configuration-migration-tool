@@ -27,6 +27,8 @@ class Component(ComponentBase):
     def __init__(self):
         super().__init__()
         self.config = Configuration(**self.configuration.parameters)
+        self.config.kbc_token = self.environment_variables.token
+        self.config.kbc_url = self.environment_variables.url
         self.storage_api_client = Client(
             self.config.kbc_url, self.config.kbc_token, branch_id=self.config.branch_id
         )
