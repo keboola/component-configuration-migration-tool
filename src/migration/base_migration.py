@@ -20,6 +20,7 @@ class BaseMigration(ABC):
         logging.info(
             f"Set components: origin {self.origin_component_id} to destination {self.destination_component_id}"
         )
+        self.remove_authorization = True
 
     def execute(self):
         self._do_execute()
@@ -138,7 +139,7 @@ class BaseMigration(ABC):
                 target_config_data = self.configuration_update(target_config_data)
 
                 # Remove authorization section
-                if "authorization" in target_config_data["configuration"]:
+                if self.remove_authorization and "authorization" in target_config_data["configuration"]:
                     del target_config_data["configuration"]["authorization"]
 
                 # Create new configuration in target component
@@ -147,7 +148,6 @@ class BaseMigration(ABC):
                     name=target_config_data["name"],
                     description=target_config_data["description"],
                     configuration=target_config_data["configuration"],
-                    configuration_id=target_config_data["id"],
                 )
 
                 # Mark original configuration as successfully migrated
