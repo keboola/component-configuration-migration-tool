@@ -1,84 +1,194 @@
-Configuration Migration Tool
-=============
+# Configuration Migration Tool
 
-Description
+A Keboola component designed to migrate user configurations between different component versions when components are deprecated or replaced. This tool ensures seamless transitions by automatically copying and transforming configurations from deprecated components to their replacement versions.
 
-**Table of Contents:**
+## Overview
 
-[TOC]
+The Configuration Migration Tool is primarily used during component deprecation workflows. When a component is being deprecated in favor of a newer version, this tool:
 
-Functionality Notes
-===================
+1. **Copies configurations** from the deprecated (origin) component to the replacement (destination) component
+2. **Transforms configuration data** as needed using custom migration logic
+3. **Tracks migration status** to prevent duplicate migrations
 
-Prerequisites
-=============
+## When to Use This Tool
 
-Ensure you have the necessary API token, register the application, etc.
+This tool is automatically triggered when:
+- A component is marked as deprecated in the Keboola Developer Portal
+- The deprecated component has the `replacementApp` UI option set to the ID of the new component
+- Users attempt to access configurations of the deprecated component
 
-Features
-========
+## Supported Components
 
-| **Feature**             | **Description**                               |
-|-------------------------|-----------------------------------------------|
-| Generic UI Form         | Dynamic UI form for easy configuration.       |
-| Row-Based Configuration | Allows structuring the configuration in rows. |
-| OAuth                   | OAuth authentication enabled.                 |
-| Incremental Loading     | Fetch data in new increments.                 |
-| Backfill Mode           | Supports seamless backfill setup.             |
-| Date Range Filter       | Specify the date range for data retrieval.    |
+Currently supported migrations:
 
-Supported Endpoints
-===================
+| Origin Component | Destination Component | Migration Type |
+|------------------|----------------------|----------------|
+| `keboola.ex-facebook` | Replacement component | MetaMigration |
+| `keboola.ex-facebook-ads` | Replacement component | MetaMigration |
+| `keboola.ex-instagram` | Replacement component | MetaMigration |
 
-If you need additional endpoints, please submit your request to
-[ideas.keboola.com](https://ideas.keboola.com/).
+## Configuration
 
-Configuration
-=============
+The tool requires the following parameters:
 
-Param 1
--------
-Details about parameter 1.
+### Required Parameters
 
-Param 2
--------
-Details about parameter 2.
+- `origin` - Component ID of the deprecated component (source)
+- `destination` - Component ID of the replacement component (target)
 
-Output
-======
+### Authentication
 
-Provides a list of tables, foreign keys, and schema.
+The tool uses Keboola Storage API credentials:
+- `KBC_TOKEN` - Storage API token (from environment or config)
+- `KBC_URL` - Keboola instance URL (from environment or config)
 
-Development
------------
+### Example Configuration
 
-To customize the local data folder path, replace the `CUSTOM_FOLDER` placeholder with your desired path in the `docker-compose.yml` file:
+```json
+{
+  "parameters": {
+    "origin": "keboola.ex-facebook",
+    "destination": "keboola.ex-facebook-v2"
+  }
+}
+```
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    volumes:
-      - ./:/code
-      - ./CUSTOM_FOLDER:/data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Adding New Migrations
 
-Clone this repository, initialize the workspace, and run the component using the following
-commands:
+To add support for migrating a new component, follow these steps:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-git clone https://github.com/keboola/component-configuration-migration-tool component-configuration-migration-tool
+### 1. Create a Migration Class
+
+Create a new migration class that inherits from `BaseMigration`:
+
+```python
+from migration.base_migration import BaseMigration
+
+class YourCustomMigration(BaseMigration):
+    """
+    Custom migration for your component.
+    """
+    
+    def configuration_update(self, configuration: dict) -> dict:
+        """
+        Override this method to transform configuration data.
+        
+        Args:
+            configuration: The source configuration dict
+            
+        Returns:
+            dict: The transformed configuration for the destination component
+        """
+        
+        # Example: Transform parameter names
+        if "old_parameter" in configuration["configuration"]["parameters"]:
+            configconfiguration["configuration"]["parameters"]["new_parameter"] = (
+                configconfiguration["configuration"]["parameters"].pop("old_parameter")
+            )
+        
+        return configuration
+```
+
+### 2. Register the Migration
+
+Add your migration class to the `MIGRATION_REGISTRY` in `src/component.py`:
+
+```python
+MIGRATION_REGISTRY = {
+    "keboola.ex-facebook": MetaMigration,
+    "keboola.ex-facebook-ads": MetaMigration,
+    "keboola.ex-instagram": MetaMigration,
+    "your.component.id": YourCustomMigration,  # Add this line
+}
+```
+
+### 3. Migration Class Methods
+
+The `BaseMigration` class provides these key methods you can override:
+
+#### `configuration_update(self, configuration: dict) -> dict`
+- **Purpose**: Transform configuration data during migration
+- **Default behavior**: Returns configuration unchanged
+- **Override when**: You need to modify parameters, update structure, or transform data
+
+## Component Deprecation Workflow
+
+### 1. Set Replacement App
+
+When deprecating a component, set the `replacementApp` UI option in the Developer Portal:
+
+```json
+{
+  "replacementApp": "new.component.id"
+}
+```
+
+### 2. Migration Process
+
+The migration tool will:
+
+1. **Fetch source configurations** from the deprecated component
+2. **Check migration status** to skip already migrated configurations
+3. **Transform each configuration** using the appropriate migration class
+4. **Create new configurations** in the destination component
+5. **Mark original configurations** as successfully migrated
+6. **Handle errors** and mark failed migrations appropriately
+
+### 3. Migration Status Tracking
+
+Each configuration tracks its migration status in the `runtime.migrationStatus` field:
+- `"success"` - Successfully migrated
+- `"error: <message>"` - Migration failed with error details
+- `"n/a"` - Not yet migrated
+
+## Available Actions
+
+### `run` (default)
+Executes the migration process for all unmigrated configurations.
+
+
+
+### `status`
+Returns migration status for all configurations in the origin component.
+
+
+
+## Development
+
+### Local Development Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/keboola/component-configuration-migration-tool
 cd component-configuration-migration-tool
+```
+
+2. Build and run the development environment:
+```bash
 docker-compose build
 docker-compose run --rm dev
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
-Run the test suite and perform lint checks using this command:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Run tests:
+```bash
 docker-compose run --rm test
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
-Integration
-===========
+### Directory Structure
 
-For details about deployment and integration with Keboola, refer to the
-[deployment section of the developer
-documentation](https://developers.keboola.com/extend/component/deployment/).
+```
+src/
+├── component.py              # Main component class and migration registry
+├── configuration.py          # Configuration validation and parsing
+├── enriched_configurations.py # Enhanced Storage API client
+└── migration/
+    ├── __init__.py
+    ├── base_migration.py     # Base migration class
+    └── meta_migration.py     # Meta platform migration
+```
+
+For deployment and integration details, refer to the [Keboola Developer Documentation](https://developers.keboola.com/extend/component/deployment/).
+
+## License
+
+MIT licensed, see [LICENSE](./LICENSE.md) file.
