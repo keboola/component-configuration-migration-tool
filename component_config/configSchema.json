@@ -18,20 +18,21 @@
         "type": "string",
         "title": "Destination Component",
         "readOnly": true,
-        "description": "Destination component for migration. Automatically loaded when origin is set."
+        "description": "Destination component for migration. It is automatically loaded when the origin component is saved. After it is loaded, you need to save the configuration again."
       },
       "load-destination": {
         "type": "button",
         "format": "sync-action",
         "options": {
           "async": {
+            "label":"Load destination (automatically)",
             "action": "load-destination",
             "autoload": [
               "parameters.origin"
             ],
             "cache": false
           },
-          "hidden": true
+          "hidden": false
         }
       }
     }
