@@ -9,6 +9,8 @@ class MetaMigration(BaseMigration):
 
     def configuration_update(self, configuration: dict) -> dict:
         """Update configuration."""
+        if not configuration["configuration"].get("parameters", None):
+            configuration["configuration"]["parameters"] = {}
         configuration["configuration"]["parameters"]["bucket-id"] = (
             f"in.c-{self.origin_component_id.replace('.', '-')}-{configuration['id']}"
         )
