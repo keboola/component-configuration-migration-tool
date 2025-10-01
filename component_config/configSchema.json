@@ -22,7 +22,7 @@
             "options": {
                 "async": {
                     "action": "load-destination",
-                    "autoload": ["parameters.origin"]
+                    "autoload": ["properties.origin"]
                 }
             }
         }
