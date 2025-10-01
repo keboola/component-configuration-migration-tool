@@ -23,9 +23,9 @@ Currently supported migrations:
 
 | Origin Component | Destination Component | Migration Type |
 |------------------|----------------------|----------------|
-| `keboola.ex-facebook` | Replacement component | MetaMigration |
-| `keboola.ex-facebook-ads` | Replacement component | MetaMigration |
-| `keboola.ex-instagram` | Replacement component | MetaMigration |
+| `keboola.ex-facebook` | `keboola.ex-facebook-pages` | MetaMigration |
+| `keboola.ex-facebook-ads` | `keboola.ex-facebook-ads-v2` | MetaMigration |
+| `keboola.ex-instagram` | `keboola.ex-instagram-v2` | MetaMigration |
 
 ## Configuration
 
@@ -82,8 +82,8 @@ class YourCustomMigration(BaseMigration):
         
         # Example: Transform parameter names
         if "old_parameter" in configuration["configuration"]["parameters"]:
-            configconfiguration["configuration"]["parameters"]["new_parameter"] = (
-                configconfiguration["configuration"]["parameters"].pop("old_parameter")
+            configuration["configuration"]["parameters"]["new_parameter"] = (
+                configuration["configuration"]["parameters"].pop("old_parameter")
             )
         
         return configuration
@@ -94,12 +94,30 @@ class YourCustomMigration(BaseMigration):
 Add your migration class to the `MIGRATION_REGISTRY` in `src/component.py`:
 
 ```python
-MIGRATION_REGISTRY = {
-    "keboola.ex-facebook": MetaMigration,
-    "keboola.ex-facebook-ads": MetaMigration,
-    "keboola.ex-instagram": MetaMigration,
-    "your.component.id": YourCustomMigration,  # Add this line
-}
+MIGRATION_REGISTRY = ComponentMigrationList(
+    migrations=[
+        ComponentMigration(
+            origin="keboola.ex-facebook",
+            destination="keboola.ex-facebook-pages",
+            migration_class=MetaMigration,
+        ),
+        ComponentMigration(
+            origin="keboola.ex-facebook-ads",
+            destination="keboola.ex-facebook-ads-v2",
+            migration_class=MetaMigration,
+        ),
+        ComponentMigration(
+            origin="keboola.ex-instagram",
+            destination="keboola.ex-instagram-v2",
+            migration_class=MetaMigration,
+        ),
+        ComponentMigration(
+            origin="your.component.id",
+            destination="your.new.component.id",
+            migration_class=YourCustomMigration,  # Add this migration
+        ),
+    ]
+)
 ```
 
 ### 3. Migration Class Methods
@@ -146,11 +164,11 @@ Each configuration tracks its migration status in the `runtime.migrationStatus` 
 ### `run` (default)
 Executes the migration process for all unmigrated configurations.
 
-
-
 ### `status`
 Returns migration status for all configurations in the origin component.
 
+### `supported-migrations`
+Returns a list of all supported migration pairs with component names and IDs.
 
 
 ## Development
@@ -180,7 +198,7 @@ docker-compose run --rm test
 src/
 ├── component.py              # Main component class and migration registry
 ├── configuration.py          # Configuration validation and parsing
-├── enriched_configurations.py # Enhanced Storage API client
+├── enriched_api_client.py    # Enhanced Storage API client
 └── migration/
     ├── __init__.py
     ├── base_migration.py     # Base migration class
