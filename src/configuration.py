@@ -36,6 +36,8 @@ class Configuration(BaseModel):
         else:
             raise UserException("KBC_URL environment variable is required")
 
+        if not data.get("destination", None) and data.get("origin", None):
+            data["destination"] = data.get("registry").get_destination_id(data["origin"])
         return data
 
 

@@ -50,7 +50,7 @@ class Component(ComponentBase):
 
     def __init__(self):
         super().__init__()
-        self.config = Configuration(**self.configuration.parameters)
+        self.config = Configuration(**self.configuration.parameters, registry=self.MIGRATION_REGISTRY)
         self.storage_api_client = Client(self.config.kbc_url, self.config.kbc_token)
 
         # Replace configurations with enriched version that includes update method
@@ -84,29 +84,30 @@ class Component(ComponentBase):
         result = []
 
         for origin_id in origin_ids:
+            # Get destination ID from migration registry
+            destination_id = self.MIGRATION_REGISTRY.get_destination_id(origin_id)
+
+            # Get origin component name
             try:
-                component_info = self.storage_api_client.components.get_component(origin_id)
-                component_name = component_info.get("name", origin_id)
-                result.append({"label": component_name, "value": origin_id})
+                origin_info = self.storage_api_client.components.get_component(origin_id)
+                origin_name = origin_info.get("name", origin_id)
             except Exception as e:
-                logging.warning(f"Failed to get component info for {origin_id}: {e}")
-                # Fallback to using origin_id as label if API call fails
-                result.append({"label": origin_id, "value": origin_id})
+                logging.warning(f"Failed to get origin component info for {origin_id}: {e}")
+                origin_name = origin_id
+
+            # Get destination component name
+            try:
+                destination_info = self.storage_api_client.components.get_component(destination_id)
+                destination_name = destination_info.get("name", destination_id)
+            except Exception as e:
+                logging.warning(f"Failed to get destination component info for {destination_id}: {e}")
+                destination_name = destination_id
+
+            # Create label in format "origin name -> destination name"
+            label = f"{origin_name} -> {destination_name}"
+            result.append({"label": label, "value": origin_id})
 
         return result
-
-    @sync_action("load-destination")
-    def load_destination(self) -> dict:
-        """Get destination component information for the given origin."""
-        if not self.config.origin:
-            raise UserException("Origin component ID is required for load-destination action.")
-
-        # Get destination ID from migration registry
-        destination_id = self.MIGRATION_REGISTRY.get_destination_id(self.config.origin)
-        if not destination_id:
-            raise UserException(f"No destination found for origin: {self.config.origin}")
-
-        return {"type": "data", "data": {"destination": destination_id}}
 
     @sync_action("status")
     def get_migration_status(self) -> dict:
