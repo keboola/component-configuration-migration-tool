@@ -106,14 +106,7 @@ class Component(ComponentBase):
         if not destination_id:
             raise UserException(f"No destination found for origin: {self.config.origin}")
 
-        try:
-            component_info = self.storage_api_client.components.get_component(destination_id)
-            component_name = component_info.get("name", destination_id)
-            return {"label": component_name, "value": destination_id}
-        except Exception as e:
-            logging.warning(f"Failed to get component info for destination {destination_id}: {e}")
-            # Fallback to using destination_id as label if API call fails
-            return {"label": destination_id, "value": destination_id}
+        return {"type": "data", "data": {"destination": destination_id}}
 
     @sync_action("status")
     def get_migration_status(self) -> dict:

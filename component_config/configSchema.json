@@ -2,30 +2,37 @@
     "type": "object",
     "title": "Configuration Migration Tool",
     "properties": {
-        "origin": {
-            "type": "string",
-            "enum": [],
-            "title": "Origin Component",
-            "description": "Set the origin component for migration.",
-            "options": {
-                "async": {
-                    "label": "Load supported migrations",
-                    "action": "supported-migrations"
-                }
-            }
+      "origin": {
+        "enum": [],
+        "type": "string",
+        "title": "Origin Component",
+        "options": {
+          "async": {
+            "label": "Load supported migrations",
+            "action": "supported-migrations"
+          }
         },
-        "destination": {
-            "type": "string",
-            "title": "Destination Component",
-            "readonly": true,
-            "description": "Destination component for migration. Automatically loaded when origin is set.",
-            "options": {
-                "async": {
-                    "action": "load-destination",
-                    "autoload": ["properties.origin"]
-                }
-            }
+        "description": "Set the origin component for migration."
+      },
+      "destination": {
+        "type": "string",
+        "title": "Destination Component",
+        "readOnly": true,
+        "description": "Destination component for migration. Automatically loaded when origin is set."
+      },
+      "load-destination": {
+        "type": "button",
+        "format": "sync-action",
+        "options": {
+          "async": {
+            "action": "load-destination",
+            "autoload": [
+              "parameters.origin"
+            ],
+            "cache": false
+          },
+          "hidden": true
         }
-
+      }
     }
-}
+  }
