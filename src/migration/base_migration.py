@@ -17,6 +17,9 @@ class BaseMigration(ABC):
         self.storage_client = storage_client
         self.origin_component_id: str = origin
         self.destination_component_id: str = destination
+        if not self.destination_component_id:
+            raise UserException("Destination component ID not set.")
+
         logging.info(
             f"Set components: origin {self.origin_component_id} to destination {self.destination_component_id}"
         )

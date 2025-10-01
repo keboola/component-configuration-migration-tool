@@ -1,5 +1,6 @@
 import os
 import logging
+from dataclasses import dataclass
 from pydantic import BaseModel, Field, model_validator
 from keboola.component.exceptions import UserException
 
@@ -10,8 +11,8 @@ class Configuration(BaseModel):
     branch_id: str = Field(default="default", alias="branch_id")
 
     # Migration parameters
-    origin: str = Field(default=None, alias="origin")
-    destination: str = Field(default=None, alias="destination")
+    origin: str = Field(default=None)
+    destination: str = Field(default=None)
 
     @model_validator(mode="before")
     def validate_kbc_credentials(cls, data):
@@ -36,3 +37,30 @@ class Configuration(BaseModel):
             raise UserException("KBC_URL environment variable is required")
 
         return data
+
+
+@dataclass
+class ComponentMigration:
+    origin: str
+    destination: str
+    migration_class: type
+
+
+@dataclass
+class ComponentMigrationList:
+    migrations: list[ComponentMigration]
+
+    def get_origin_ids(self) -> list[str]:
+        return [migration.origin for migration in self.migrations]
+
+    def get_destination_id(self, origin: str) -> str:
+        for migration in self.migrations:
+            if migration.origin == origin:
+                return migration.destination
+        return None
+
+    def get_migration_class(self, origin: str) -> type:
+        for migration in self.migrations:
+            if migration.origin == origin:
+                return migration.migration_class
+        return None

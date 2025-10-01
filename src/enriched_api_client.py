@@ -4,6 +4,7 @@ Enhanced Configurations class with additional update functionality.
 
 import json
 from kbcstorage.configurations import Configurations
+from kbcstorage.components import Components
 
 
 class EnrichedConfigurations(Configurations):
@@ -34,3 +35,17 @@ class EnrichedConfigurations(Configurations):
 
         url = "{}/{}/configs/{}".format(self.base_url, component_id, configuration_id)
         return self._put(url, data=json.dumps(configuration), headers={"Content-Type": "application/json"})
+
+
+class EnrichedComponents(Components):
+    """
+    Enhanced Components class that extends the base Components class
+    with additional functionality.
+    """
+
+    def get_component(self, component_id: str):
+        """
+        List all components (and optionally configurations) in a project.
+        """
+        url = f"{self.base_url}/{component_id}"
+        return self._get(f"{url}", headers={"Content-Type": "application/json"})
