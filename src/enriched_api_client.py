@@ -4,6 +4,7 @@ Enhanced Configurations class with additional update functionality.
 
 import json
 
+from kbcstorage.client import Client
 from kbcstorage.components import Components
 from kbcstorage.configurations import Configurations
 
@@ -50,3 +51,15 @@ class EnrichedComponents(Components):
         """
         url = f"{self.base_url}/{component_id}"
         return self._get(f"{url}", headers={"Content-Type": "application/json"})
+
+
+class EnrichedClient(Client):
+    """
+    Enriched Client class that changes the base Client class
+    with enriched functionality.
+    """
+
+    def __init__(self, base_url: str, token: str, branch_id: str = "default"):
+        super().__init__(base_url, token, branch_id)
+        self.configurations = EnrichedConfigurations(base_url, token, branch_id)
+        self.components = EnrichedComponents(base_url, token, branch_id)

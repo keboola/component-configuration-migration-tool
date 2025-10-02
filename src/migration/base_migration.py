@@ -7,14 +7,15 @@ import logging
 from abc import ABC
 from typing import Any
 
-from kbcstorage.client import Client
 from keboola.component.exceptions import UserException
+
+from enriched_api_client import EnrichedClient
 
 
 class BaseMigration(ABC):
     """Base class for all migrations providing common functionality."""
 
-    def __init__(self, storage_client: Client, origin: str, destination: str):
+    def __init__(self, storage_client: EnrichedClient, origin: str, destination: str):
         self.storage_client = storage_client
         self.origin_component_id: str = origin
         self.destination_component_id: str = destination

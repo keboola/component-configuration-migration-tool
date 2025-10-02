@@ -4,12 +4,11 @@ Component Configuration Migration Tool main class.
 
 import logging
 
-from kbcstorage.client import Client
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 
 from configuration import ComponentMigration, ComponentMigrationList, Configuration
-from enriched_api_client import EnrichedComponents, EnrichedConfigurations
+from enriched_api_client import EnrichedClient
 from migration.base_migration import BaseMigration
 from migration.meta_migration import MetaMigration
 
@@ -50,15 +49,7 @@ class Component(ComponentBase):
     def __init__(self):
         super().__init__()
         self.config = Configuration(**self.configuration.parameters, registry=self.MIGRATION_REGISTRY)
-        self.storage_api_client = Client(self.config.kbc_url, self.config.kbc_token)
-
-        # Replace configurations with enriched version that includes update method
-        self.storage_api_client.configurations = EnrichedConfigurations(
-            self.storage_api_client.root_url, self.storage_api_client.token, self.storage_api_client.branch_id
-        )
-        self.storage_api_client.components = EnrichedComponents(
-            self.storage_api_client.root_url, self.storage_api_client.token, self.storage_api_client.branch_id
-        )
+        self.storage_api_client = EnrichedClient(self.config.kbc_url, self.config.kbc_token, self.config.branch_id)
 
     def run(self):
         """Main entry point for the migration component."""
