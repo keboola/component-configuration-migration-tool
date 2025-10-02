@@ -1,19 +1,18 @@
 {
   "type": "object",
-  "title": "extractor configuration",
-  "required": [
-    "print_hello"
-  ],
+  "title": "Configuration Migration Tool",
   "properties": {
-    "print_hello": {
-      "type": "boolean",
-      "title": "Print Hello",
-      "propertyOrder": 1
-    },
-    "debug": {
-      "type": "boolean",
-      "title": "Debug",
-      "propertyOrder": 2
+    "origin": {
+      "enum": [],
+      "type": "string",
+      "title": "Migration",
+      "options": {
+        "async": {
+          "label": "Load supported migrations",
+          "action": "supported-migrations"
+        }
+      },
+      "description": "Choose migration to perform."
     }
   }
 }

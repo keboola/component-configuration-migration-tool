@@ -1,34 +1,69 @@
+import logging
 import os
-from pydantic import BaseModel, Field, field_validator
+from dataclasses import dataclass
+
+from keboola.component.exceptions import UserException
+from pydantic import BaseModel, Field, model_validator
 
 
 class Configuration(BaseModel):
-    kbc_token: str = Field(alias="#kbc_token")
-    kbc_url: str = Field(alias="kbc_url")
-    branch_id: str = Field(alias="branch_id")
+    kbc_token: str = Field(default=None, alias="#kbc_token")
+    kbc_url: str = Field(default=None, alias="kbc_url")
+    branch_id: str = Field(default="default", alias="branch_id")
 
-    @field_validator('kbc_token', mode='before')
-    @classmethod
-    def validate_kbc_token(cls, v):
-        # Prioritize environment variable over config value
-        env_token = os.environ.get('KBC_TOKEN')
+    # Migration parameters
+    origin: str = Field(default=None)
+    destination: str = Field(default=None)
+
+    @model_validator(mode="before")
+    def validate_kbc_credentials(cls, data):
+        # Handle kbc_token
+        env_token = os.environ.get("KBC_TOKEN")
         if env_token is not None:
-            return env_token
-        return v
+            logging.info("Using KBC_TOKEN from environment.")
+            data["#kbc_token"] = env_token
+        elif data.get("#kbc_token") is not None:
+            logging.info("Using KBC_TOKEN from config.")
+        else:
+            raise UserException("KBC_TOKEN environment variable is required")
 
-    @field_validator('kbc_url', mode='before')
-    @classmethod
-    def validate_kbc_url(cls, v):
-        # Prioritize environment variable over config value
-        env_url = os.environ.get('KBC_URL')
+        # Handle kbc_url
+        env_url = os.environ.get("KBC_URL")
         if env_url is not None:
-            return env_url
-        return v
+            logging.info("Using KBC_URL from environment.")
+            data["kbc_url"] = env_url
+        elif data.get("kbc_url") is not None:
+            logging.info("Using KBC_URL from config.")
+        else:
+            raise UserException("KBC_URL environment variable is required")
 
-    @field_validator('branch_id', mode='before')
-    @classmethod
-    def validate_branch_id(cls, v):
-        # If parameter exists in config, use it; otherwise set default value
-        if v is not None:
-            return v
-        return "default"
+        if not data.get("destination", None) and data.get("origin", None):
+            data["destination"] = data.get("registry").get_destination_id(data["origin"])
+        return data
+
+
+@dataclass
+class ComponentMigration:
+    origin: str
+    destination: str
+    migration_class: type
+
+
+@dataclass
+class ComponentMigrationList:
+    migrations: list[ComponentMigration]
+
+    def get_origin_ids(self) -> list[str]:
+        return [migration.origin for migration in self.migrations]
+
+    def get_destination_id(self, origin: str) -> str:
+        for migration in self.migrations:
+            if migration.origin == origin:
+                return migration.destination
+        return None
+
+    def get_migration_class(self, origin: str) -> type:
+        for migration in self.migrations:
+            if migration.origin == origin:
+                return migration.migration_class
+        return None
