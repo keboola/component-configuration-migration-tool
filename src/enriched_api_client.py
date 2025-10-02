@@ -59,7 +59,7 @@ class EnrichedClient(Client):
     with enriched functionality.
     """
 
-    def __init__(self, base_url: str, token: str, branch_id: str = "default"):
-        super().__init__(base_url, token, branch_id)
-        self.configurations = EnrichedConfigurations(base_url, token, branch_id)
-        self.components = EnrichedComponents(base_url, token, branch_id)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.configurations = EnrichedConfigurations(self.root_url, self.token, self.branch_id)
+        self.components = EnrichedComponents(self.root_url, self.token, self.branch_id)
