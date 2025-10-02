@@ -1,8 +1,9 @@
-import os
 import logging
+import os
 from dataclasses import dataclass
-from pydantic import BaseModel, Field, model_validator
+
 from keboola.component.exceptions import UserException
+from pydantic import BaseModel, Field, model_validator
 
 
 class Configuration(BaseModel):

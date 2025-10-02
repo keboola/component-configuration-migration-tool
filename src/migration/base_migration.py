@@ -2,12 +2,13 @@
 Base migration classes and interfaces for component configuration migration.
 """
 
-from abc import ABC
-from typing import Dict, List, Any
-import logging
 import copy
-from keboola.component.exceptions import UserException
+import logging
+from abc import ABC
+from typing import Any
+
 from kbcstorage.client import Client
+from keboola.component.exceptions import UserException
 
 
 class BaseMigration(ABC):
@@ -37,7 +38,7 @@ class BaseMigration(ABC):
         )
         return self
 
-    def _get_source_configurations(self) -> List[dict]:
+    def _get_source_configurations(self) -> list[dict]:
         """Get all configurations from source component."""
         if not self.origin_component_id:
             raise ValueError("Origin component ID not set.")
@@ -55,7 +56,7 @@ class BaseMigration(ABC):
 
         return False
 
-    def _get_configuration_status(self, config: Dict[str, Any]) -> str:
+    def _get_configuration_status(self, config: dict[str, Any]) -> str:
         """Get migration status of a configuration."""
         configuration = config.get("configuration", {})
 
@@ -107,7 +108,7 @@ class BaseMigration(ABC):
         """Update configuration."""
         return configuration
 
-    def _do_execute(self) -> Dict[str, Any]:
+    def _do_execute(self) -> dict[str, Any]:
         """
         Internal method that performs the actual migration work.
 
@@ -200,7 +201,7 @@ class BaseMigration(ABC):
         logging.info(f"Migration completed: {result['summary']}")
         return result
 
-    def status(self) -> Dict[str, Any]:
+    def status(self) -> dict[str, Any]:
         """
         Get migration status for all configurations in the source component.
 

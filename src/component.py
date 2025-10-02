@@ -4,15 +4,14 @@ Component Configuration Migration Tool main class.
 
 import logging
 
+from kbcstorage.client import Client
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
-from kbcstorage.client import Client
 
-
-from configuration import Configuration, ComponentMigration, ComponentMigrationList
-from enriched_api_client import EnrichedConfigurations, EnrichedComponents
-from migration.meta_migration import MetaMigration
+from configuration import ComponentMigration, ComponentMigrationList, Configuration
+from enriched_api_client import EnrichedComponents, EnrichedConfigurations
 from migration.base_migration import BaseMigration
+from migration.meta_migration import MetaMigration
 
 
 class Component(ComponentBase):

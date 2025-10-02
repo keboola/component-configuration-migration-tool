@@ -3,8 +3,9 @@ Enhanced Configurations class with additional update functionality.
 """
 
 import json
-from kbcstorage.configurations import Configurations
+
 from kbcstorage.components import Components
+from kbcstorage.configurations import Configurations
 
 
 class EnrichedConfigurations(Configurations):
