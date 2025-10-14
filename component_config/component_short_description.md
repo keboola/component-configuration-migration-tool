@@ -1,1 +1,1 @@
-Configuration Migration Tool short description
+Migration tool for moving configurations from one component to another (only for prepared components).

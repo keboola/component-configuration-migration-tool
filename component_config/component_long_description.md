@@ -1,1 +1,1 @@
-Configuration Migration Tool long description
+The component migrates configurations from one component to another. It is used when users need to move configurations after a completely new component is released to replace an old one. To use it, a migration must be prepared in advance within this tool, so only specific components are allowed for migration.
