@@ -1,1 +1,1 @@
-Migration tool for moving configurations from one component to another (only for prepared components).
+Migration tool for moving configurations of selected components from one component to another (only for preconfigured components).

@@ -1,6 +1,6 @@
 # Configuration Migration Tool
 
-A Keboola component designed to migrate user configurations between different component when the old one is deprecated or replaced. This tool ensures seamless transitions by automatically copying and transforming configurations from deprecated components to their replacement versions.
+A Keboola component designed to automatically migrate user configurations from one component to another, where to former one is old or even deprecated and the latter one replaces it. This tool ensures seamless transitions in such cases.
 
 ## Overview
 
@@ -13,14 +13,10 @@ The Configuration Migration Tool is primarily used during component deprecation 
 ## How to use this tool
 
 ### Option 1
-Create the configuration for this tool. Select which component you want to migrate. Run the component. In the log, you can see the state of the migrated component.
+Create the configuration for this tool. Select which component you want to migrate. Run the component. In the log, you can see the state of the migration.
 
 ### Option 2
-This tool is automatically shown in the old component when:
-- A component is marked as deprecated in the Keboola Developer Portal.
-- The deprecated component has the `replacementApp` UI option set to the ID of the new component.
-
-In the deprecated component detail, click on `proceed with migration`. You will see a list of your configurations and the migration state of each one. Clicking the migrate button will migrate all configurations with status N/A or error.
+In the deprecated component detail, click on `PROCEED WITH MIGRATION`. You will see a list of your configurations and the migration state of each one. Clicking the `MIGRATE` button will migrate all configurations whose migration status is N/A or Error.
 
 ### Migration Status Tracking
 
@@ -69,7 +65,7 @@ The tool uses Keboola Storage API credentials:
 ## Development
 ### Adding New Migrations
 
-To add support for migrating a new component, follow these steps:
+To add support for migrating a new component pair, follow these steps:
 
 #### 1. Create a Migration Class
 
@@ -142,6 +138,11 @@ The `BaseMigration` class provides these key methods you can override:
 - **Purpose**: Transform configuration data during migration
 - **Default behavior**: Returns configuration unchanged
 - **Override when**: You need to modify parameters, update structure, or transform data
+
+### Show Migration button in deprectaed component
+The button is automatically shown in the old component when:
+- A component is marked as deprecated in the Keboola Developer Portal.
+- The deprecated component has the `replacementApp` UI option set to the ID of the new component.
 
 ### Local Development Setup
 

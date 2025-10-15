@@ -90,10 +90,8 @@ class TestBaseMigration(unittest.TestCase):
             "configuration": {"runtime": {"otherProperty": "existing value"}, "otherConfig": "some data"},
         }
 
-        # Call the method
         self.migration._update_configuration_status(config, "success")
 
-        # Verify the storage client was called with correct parameters
         self.mock_storage_client.configurations.update.assert_called_once_with(
             component_id="test-origin-component",
             configuration_id="test-config-1",
@@ -116,10 +114,8 @@ class TestBaseMigration(unittest.TestCase):
             "configuration": {"otherConfig": "some data"},
         }
 
-        # Call the method
         self.migration._update_configuration_status(config, "error: Test error")
 
-        # Verify the storage client was called with correct parameters
         self.mock_storage_client.configurations.update.assert_called_once_with(
             component_id="test-origin-component",
             configuration_id="test-config-2",
@@ -134,10 +130,8 @@ class TestBaseMigration(unittest.TestCase):
         """Test _update_configuration_status when configuration section is missing."""
         config = {"id": "test-config-3", "name": "Test Configuration", "description": "Test Description"}
 
-        # Call the method
         self.migration._update_configuration_status(config, "success")
 
-        # Verify the storage client was called with correct parameters
         self.mock_storage_client.configurations.update.assert_called_once_with(
             component_id="test-origin-component",
             configuration_id="test-config-3",
@@ -152,10 +146,8 @@ class TestBaseMigration(unittest.TestCase):
         """Test _update_configuration_status when description is missing."""
         config = {"id": "test-config-4", "name": "Test Configuration", "configuration": {"someConfig": "data"}}
 
-        # Call the method
         self.migration._update_configuration_status(config, "pending")
 
-        # Verify the storage client was called with correct parameters
         self.mock_storage_client.configurations.update.assert_called_once_with(
             component_id="test-origin-component",
             configuration_id="test-config-4",
@@ -175,10 +167,8 @@ class TestBaseMigration(unittest.TestCase):
             "configuration": {"runtime": {"existingStatus": "old_status", "otherRuntimeData": "preserved"}},
         }
 
-        # Call the method
         self.migration._update_configuration_status(config, "success")
 
-        # Verify the storage client was called with correct parameters
         self.mock_storage_client.configurations.update.assert_called_once_with(
             component_id="test-origin-component",
             configuration_id="test-config-5",
@@ -204,10 +194,8 @@ class TestBaseMigration(unittest.TestCase):
             "configuration": {"someConfig": "data"},
         }
 
-        # Call the method
         self.migration._update_configuration_status(config, "")
 
-        # Verify the storage client was called with correct parameters
         self.mock_storage_client.configurations.update.assert_called_once_with(
             component_id="test-origin-component",
             configuration_id="test-config-6",
@@ -221,7 +209,6 @@ class TestBaseMigration(unittest.TestCase):
     @patch("src.migration.base_migration.logging")
     def test_do_execute_successful_migration(self, mock_logging):
         """Test _do_execute with successful migration scenario."""
-        # Mock source configurations
         source_configs = [
             {
                 "id": "config-1",
@@ -237,21 +224,17 @@ class TestBaseMigration(unittest.TestCase):
             },
         ]
 
-        # Mock created configuration response
         created_config = {"id": "new-config-1", "name": "Test Config 1"}
 
-        # Setup mocks
         self.mock_storage_client.configurations.list.return_value = source_configs
         self.mock_storage_client.configurations.create.return_value = created_config
 
-        # Mock the helper methods
         with (
             patch.object(self.migration, "_is_configuration_migrated", return_value=False),
             patch.object(self.migration, "_mark_migration_success"),
         ):
             result = self.migration._do_execute()
 
-        # Verify results
         self.assertEqual(result["summary"]["total"], 2)
         self.assertEqual(result["summary"]["migrated"], 2)
         self.assertEqual(result["summary"]["failed"], 0)
@@ -274,11 +257,9 @@ class TestBaseMigration(unittest.TestCase):
 
         created_config = {"id": "new-config-2", "name": "Test Config 2"}
 
-        # Setup mocks
         self.mock_storage_client.configurations.list.return_value = source_configs
         self.mock_storage_client.configurations.create.return_value = created_config
 
-        # Mock _is_configuration_migrated to return True for first config, False for second
         def mock_is_migrated(config):
             return config["id"] == "config-1"
 
@@ -288,7 +269,6 @@ class TestBaseMigration(unittest.TestCase):
         ):
             result = self.migration._do_execute()
 
-        # Verify results
         self.assertEqual(result["summary"]["total"], 2)
         self.assertEqual(result["summary"]["migrated"], 1)
         self.assertEqual(result["summary"]["failed"], 0)
@@ -308,7 +288,6 @@ class TestBaseMigration(unittest.TestCase):
 
         created_config = {"id": "new-config-1", "name": "Test Config"}
 
-        # Setup mocks
         self.mock_storage_client.configurations.list.return_value = source_configs
         self.mock_storage_client.configurations.create.return_value = created_config
 
@@ -318,7 +297,6 @@ class TestBaseMigration(unittest.TestCase):
         ):
             self.migration._do_execute()
 
-        # Verify that create was called without authorization
         call_args = self.mock_storage_client.configurations.create.call_args
         config_data = call_args[1]["configuration"]
         self.assertNotIn("authorization", config_data)
