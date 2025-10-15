@@ -1,6 +1,6 @@
 # Configuration Migration Tool
 
-A Keboola component designed to automatically migrate user configurations from one component to another, where to former one is old or even deprecated and the latter one replaces it. This tool ensures seamless transitions in such cases.
+A Keboola component designed to automatically migrate user configurations from one component to another, where the former one is old or even deprecated and the latter one replaces it. This tool ensures seamless transitions in such cases.
 
 ## Overview
 
