@@ -2,7 +2,7 @@
 
 A Keboola component designed to automatically migrate user configurations from one component to another, where the former one is old or even deprecated and the latter one replaces it. This tool ensures seamless transitions in such cases.
 
-## Obsah
+## Table of Contents
 
 - **[Overview](#overview)**
 - **[How to use this tool](#how-to-use-this-tool)**
